@@ -1,0 +1,25 @@
+library(dplyr)
+library(tidyr)
+library(googlesheets4)
+library(janitor)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+
+gs4_auth() 
+
+# URL of the Google Sheet 
+soccer_sheet_url <- "https://docs.google.com/spreadsheets/d/1WZUQYfuiB7Ls-jKSnLUCOmnnYh7y9SejODQzurH-7IU/edit?usp=sharing"
+
+# Read the sheet into a dataframe
+soccer_data <- read_sheet(soccer_sheet_url)
+
+# URL of the Google Sheet 
+country_data_url <- "https://docs.google.com/spreadsheets/d/1XeF51jo6EBzTFAIBhQC8Q1TbucDYFtupi_dIuLwXcEw/edit?usp=sharing"
+
+# Read the sheet into a data frame
+
+country_data <- read_sheet(country_data_url)
+
+View(country_data)
+Veiw(soccer_data)
