@@ -5,7 +5,6 @@ library(janitor)
 library(knitr)
 library(kableExtra)
 library(tidyverse)
-
 gs4_auth() 
 
 # URL of the Google Sheet 
@@ -22,12 +21,30 @@ country_data_url <- "https://docs.google.com/spreadsheets/d/1XeF51jo6EBzTFAIBhQC
 country_data <- read_sheet(country_data_url)
 
 View(country_data)
-Veiw(soccer_data)
+View(soccer_data)
+
 
 final_combinded_data <- country_data %>%
   group_by(Region) %>%
+  group_by(Country) %>%
   right_join(soccer_data, by = join_by(Country == Country)) %>%
-  
+  select(-c(...16, PopDensity, Coastline, `Net migration`, Literacy, Phones, Arable, Crops, Deathrate, Agriculture, Other, Climate, Industry, Service, Attendance, Sport, Season, Team, Infant_mortality))%>%
+  rename(HomeGoalsDiff = HomeRatio) %>%
+  filter(!is.na(HomeWins)) %>% 
+  filter(!is.na(HomeLoss) ) %>%
+  filter(!is.na(HomeDraw)) %>% 
+  filter(!is.na(AwayWins)) %>%
+  filter(!is.na(AwayLoss)) %>%
+  filter(!is.na(AwayDraw)) %>%
+  mutate(
+        HomeWinProportion = HomeWins / (HomeWins + HomeLoss + HomeDraw),
+        AwayWinProportion = AwayWins / (AwayWins + AwayLoss + AwayDraw)
+      )
 
 View(final_combinded_data)
-
+statistics_for_graphs <- final_combinded_data %>%
+  summarize(mean_AwayGoalsDiff = mean(AwayGoalsDiff, na.rm = TRUE))%>%
+  summarize(mean_HomeGoalsDiff = mean(HomeGoalsDiff, na.rm = TRUE)) %>%
+  
+  
+  
