@@ -23,3 +23,11 @@ country_data <- read_sheet(country_data_url)
 
 View(country_data)
 Veiw(soccer_data)
+
+final_combinded_data <- country_data %>%
+  group_by(Region) %>%
+  right_join(soccer_data, by = join_by(Country == Country)) %>%
+  
+
+View(final_combinded_data)
+
