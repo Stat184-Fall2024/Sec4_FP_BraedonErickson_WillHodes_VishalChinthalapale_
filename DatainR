@@ -23,10 +23,7 @@ country_data <- read_sheet(country_data_url)
 View(country_data)
 View(soccer_data)
 
-
 final_combinded_data <- country_data %>%
-  group_by(Region) %>%
-  group_by(Country) %>%
   right_join(soccer_data, by = join_by(Country == Country)) %>%
   select(-c(...16, PopDensity, Coastline, `Net migration`, Literacy, Phones, Arable, Crops, Deathrate, Agriculture, Other, Climate, Industry, Service, Attendance, Sport, Season, Team, Infant_mortality))%>%
   rename(HomeGoalsDiff = HomeRatio) %>%
@@ -43,8 +40,20 @@ final_combinded_data <- country_data %>%
 
 View(final_combinded_data)
 statistics_for_graphs <- final_combinded_data %>%
-  summarize(mean_AwayGoalsDiff = mean(AwayGoalsDiff, na.rm = TRUE))%>%
-  summarize(mean_HomeGoalsDiff = mean(HomeGoalsDiff, na.rm = TRUE)) %>%
-  
-  
+  summarize(
+    mean_AwayGoalsDiff = mean(AwayGoalsDiff, na.rm = TRUE),
+    mean_HomeGoalsDiff = mean(HomeGoalsDiff, na.rm = TRUE)
+  )
+
+
+region_stats_for_graphs <- final_combinded_data %>%
+  group_by(Region) %>%
+  summarize(
+    mean_AwayGoalsDiff = mean(AwayGoalsDiff, na.rm = TRUE),
+    mean_HomeGoalsDiff = mean(HomeGoalsDiff, na.rm = TRUE),
+    mean_HomeWinProportion = mean(HomeWinProportion, na.rm = TRUE),
+    mean_AwayWinProportion = mean(AwayWinProportion, na.rm = TRUE)
+  )
+
+print(region_stats_for_graphs)
   
