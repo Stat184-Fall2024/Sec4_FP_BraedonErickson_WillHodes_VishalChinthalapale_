@@ -24,3 +24,21 @@ You can add options to executable code like this
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
+
+Finding the Importance of Home-field Advantage in Soccer Across the World
+
+Website for data set https://www.kaggle.com/datasets/drgilermo/home-advantage-in-soccer-and-basketball
+
+Introduction
+
+Research questions:
+
+Does home-field advantage affect the probability of winning for the home team? - Bar graph
+
+In which countries is the home field the strongest? - Scatter Plot
+
+In which countries is home field advantage the weakest? - Scatter plot
+
+In which region is home field advantage the strongest, and which are the weakest? (Bar Graph)
+
+
