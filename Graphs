@@ -1,0 +1,25 @@
+#Graph Code 
+#Bar Plot: Mean Goals Difference by Region
+ggplot(region_stats_for_graphs, aes(x = Region, y = mean_HomeGoalsDiff, fill = Region)) +
+  geom_bar(stat = "identity", color = "black") +
+  labs(title = "Mean Home Goals Difference by Region", x = "Region", y = "Mean Home Goals Difference") +
+  theme_minimal()
+
+#Line Plot: Win Proportion Comparison by Region
+region_stats_long <- region_stats_for_graphs %>%
+  pivot_longer(cols = c(mean_HomeWinProportion, mean_AwayWinProportion), 
+               names_to = "ProportionType", 
+               values_to = "Proportion")
+
+ggplot(region_stats_long, aes(x = Region, y = Proportion, group = ProportionType, color = ProportionType)) +
+  geom_line(size = 1) +
+  geom_point(size = 3) +
+  labs(title = "Comparison of Win Proportions by Region", x = "Region", y = "Proportion") +
+  theme_minimal()
+
+#Scatter Plot: Home versus Away Goals
+ggplot(region_stats_for_graphs, aes(x = mean_HomeGoalsDiff, y = mean_AwayGoalsDiff, label = Region)) +
+  geom_point(size = 4, color = "blue") +
+  geom_text(nudge_y = 0.02) +
+  labs(title = "Home vs Away Goals Difference by Region", x = "Mean Home Goals Difference", y = "Mean Away Goals Difference") +
+  theme_minimal()
