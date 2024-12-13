@@ -1,0 +1,11 @@
+---
+title: "Data Visualizations"
+format: pdf
+editor: visual
+---
+
+## ![](Downloads/Screenshot 2024-12-13 at 1.26.16 PM.png)
+
+![](Downloads/Screenshot 2024-12-13 at 1.26.27 PM.png)
+
+![](Downloads/Screenshot 2024-12-13 at 1.26.55 PM.png)
