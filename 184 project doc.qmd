@@ -41,4 +41,18 @@ In which countries is home field advantage the weakest? - Scatter plot
 
 In which region is home field advantage the strongest, and which are the weakest? (Bar Graph)
 
+Introduction
+
+Home-field advantage is a well-documented phenomenon in sports, where teams playing on their home ground often achieve better outcomes compared to away matches. There are many theorized confounding variables as to why home teams have this advantage. Whether it is because of travel, hostile fans, or unfamiliar environments, away teams are usually thought to be at a huge disadvantage. In soccer, the home advantage is particularly significant, influencing match results and team strategies. Despite its apparent impact, the specific factors contributing to home-field advantage and the extent of its influence remain areas of ongoing study. 
+This study provides an in-depth exploratory analysis of home-field advantage in soccer, and how home-field advantage affects club soccer teams in different regions. To achieve this, we found a data set off of Kaggle that we linked above. This dataset includes data on the amount of games played and specifies how well each team did both home and away. 
+
+For this project, we came up with multiple research questions. These include, How does home-field advantage affect the probability of winning for the home team? When we look at the data we want to see if home-field advantage leads the home team to a higher winning percentage. In which countries is the home field the strongest? We want to know which countries do the best when given home-field advantage. In which countries is home field advantage the weakest?
+
+
+	We obtained this dataset from Kaggle. The author of this dataset, Omri Goldstein collected it. The purpose of collecting this data is that he wanted to find a correlation between winning and being the home team.
+
+
+	This data meets the FAIR principles for the following reasons. The FAIR principle stands for Findable, Accessible, Interoperable, and Reusable. This dataset is findable because it is on a website, and you can look it up on google. It is accessible because we are able to download it into an Excel spreadsheet. This data is interoperable because anyone can use it. It is on a public platform. Finally, this data is reusable since we can refer to it when we work on the data in the future.
+
+The attributes that we found important in this discovery are, winning proportion, home goal differential, home wins, away wins, away goal differential. Part of our research question was to find the probability of winning for the home team. To do this task we need the attribute HomeWins to see if the country tends to do better at home than away. We also need the winning proportion as that gives us a more accurate result. Another important aspect that contributes to the research question is the home goal differential. This attribute helps us understand how many goals countries score when they are playing at home. We also want to compare the home goals and home goal differential, to the away goal, and away goal differential. Now we can get a better understanding and visualization on how countries perform during home games and away games. All of these attributes will be a part of data visualizations that we will create, which will really help us get a better understanding on how this data actually looks like.
 
