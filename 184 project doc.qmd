@@ -56,3 +56,18 @@ For this project, we came up with multiple research questions. These include, Ho
 
 The attributes that we found important in this discovery are, winning proportion, home goal differential, home wins, away wins, away goal differential. Part of our research question was to find the probability of winning for the home team. To do this task we need the attribute HomeWins to see if the country tends to do better at home than away. We also need the winning proportion as that gives us a more accurate result. Another important aspect that contributes to the research question is the home goal differential. This attribute helps us understand how many goals countries score when they are playing at home. We also want to compare the home goals and home goal differential, to the away goal, and away goal differential. Now we can get a better understanding and visualization on how countries perform during home games and away games. All of these attributes will be a part of data visualizations that we will create, which will really help us get a better understanding on how this data actually looks like.
 
+
+EXPLAINATION OF FIRST GRAPH:
+
+This data visualization represents the home and away win proportion based on region. Based on the graph, we can see that there are multiple trends that are quite noticeable. We can see that countries that are in the regions of Sub-Saharan Africa, Oceania, and Western Europe, have the highest win percentage when they play at home. Some regions that have a low win percentage at home include the baltics, and Northern Africa.
+
+Another important aspect of this graph is the away win proportion. This is important to us because we want to compare win proportions when different countries in regions play at home vs away. Some regions that have the highest proportion include the baltics.
+
+As you can see, the data visualization shows different trends based on region when comparing home and away win proportion.
+
+
+EXPLAINATION OF SECOND GRAPH:
+
+Another part of our research question includes the home win percentage by country. This data visualization perfectly explains and displays one of our research questions. Taking a deeper dive into the visualization, we can see that there are a few countries that have a very high win percentage when they play at home. Some countries that have a high win percentage are located in southeast asia.
+
+Countries with a lower win percentage at home include countries in western and Eastern Europe.
