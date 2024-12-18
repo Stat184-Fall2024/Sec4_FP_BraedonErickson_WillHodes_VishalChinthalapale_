@@ -179,3 +179,33 @@ ggplot(top_bottom_data, aes(x = `Mean Home Goal Differential`, y = `Mean Home Wi
     axis.text.x = element_text(angle = 45, hjust = 1),
     legend.position = "right"
   )
+# Heat map of World 
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+heatmap_data <- country_stats_for_graphs %>%
+  rename(name = Country) %>%
+  select(name, `Mean Home Win Proportion`) %>%
+  mutate(`Mean Home Win Proportion` = round(`Mean Home Win Proportion` * 100, 2))
+
+world_map <- world %>%
+  left_join(heatmap_data, by = "name")
+
+ggplot(data = world_map) +
+  geom_sf(aes(fill = `Mean Home Win Proportion`)) +
+  scale_fill_viridis_c(na.value = "gray90", name = "Home Win %") +
+  labs(
+    title = "Home Win Percentage by Country",
+    subtitle = "Gray if no data"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  )
