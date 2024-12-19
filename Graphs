@@ -1,3 +1,4 @@
+# Load Packages
 library(dplyr)
 library(tidyr)
 library(googlesheets4)
@@ -6,6 +7,9 @@ library(knitr)
 library(kableExtra)
 library(tidyverse)
 library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
 
 gs4_auth() 
 
@@ -28,14 +32,17 @@ View(soccer_data)
 final_combined_data <- country_data %>%
   right_join(soccer_data, by = "Country") %>%
   distinct() %>%
+  # Remove statistics that are not helpful
   select(-c(...16, PopDensity, Coastline, `Net migration`, Literacy, Phones, Arable, Crops, Deathrate, Agriculture, Other, Climate, Industry, Service, Attendance, Sport, Season, Team, Infant_mortality)) %>%
   rename(HomeGoalsDiff = HomeRatio) %>%
+  # Remove values that do not exist
   filter(!is.na(HomeWins)) %>% 
   filter(!is.na(HomeLoss)) %>%
   filter(!is.na(HomeDraw)) %>%
   filter(!is.na(AwayWins)) %>%
   filter(!is.na(AwayLoss)) %>%
   filter(!is.na(AwayDraw)) %>%
+  # Create new columns for our statistics
   mutate(
     HomeWinProportion = HomeWins / (HomeWins + HomeLoss + HomeDraw),
     AwayWinProportion = AwayWins / (AwayWins + AwayLoss + AwayDraw)
@@ -43,6 +50,7 @@ final_combined_data <- country_data %>%
 
 View(final_combined_data)
 
+# Summarize data by region
 region_stats_for_graphs <- final_combined_data %>%
   group_by(Region) %>%
   summarize(
@@ -59,6 +67,7 @@ region_stats_for_graphs %>%
 
 # Graphs
 
+# Create a dataframe that can be used for the bar graph
 goal_graph_region_stats <- region_stats_for_graphs %>%
   pivot_longer(
     cols = c(`Mean Home Goal Differential`, `Mean Away Goal Differential`),
@@ -83,8 +92,7 @@ ggplot(goal_graph_region_stats, aes(x = Region, y = MeanGoalDifference, fill = D
   theme(
     axis.text.x = element_text(angle = 70, hjust = 1) 
   )
-
-# The dot plot for comparing win proportion for home and away games between regions
+# Create dataframe with Win % data
 win_graph_region_stat <- region_stats_for_graphs %>%
   pivot_longer(
     cols = c(`Mean Home Win Proportion`, `Mean Away Win Proportion`), 
@@ -92,6 +100,7 @@ win_graph_region_stat <- region_stats_for_graphs %>%
     values_to = "Proportion"
   )
 
+# The dot plot for comparing win proportion for home and away games between regions
 ggplot(win_graph_region_stat, aes(x = Region, y = Proportion, color = ProportionType)) +
   geom_point(size = 9) +
   labs(
@@ -108,17 +117,6 @@ ggplot(win_graph_region_stat, aes(x = Region, y = Proportion, color = Proportion
   theme(
     axis.text.x = element_text(angle = 70, hjust = 1)
   )
-
-# Table for Region Data
-region_stats_for_graphs %>%
-  kable(format = "html", 
-        digits = 2, 
-        col.names = c("Region",
-                      "Mean Away Goal Differential",
-                      "Mean Home Goal Differential",
-                      "Mean Home Win Proportion",
-                      "Mean Away Win Proportion")) %>%
-  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed"))
 
 # Summarize data for countries
 country_stats_for_graphs <- final_combined_data %>%
@@ -145,56 +143,20 @@ ggplot() +
     legend.position = "right"
   )
 
-# Top 10 countries by Home Win Proportion
-top_10 <- country_stats_for_graphs %>%
-  arrange(desc(`Mean Home Win Proportion`)) %>%
-  slice(1:10)
-
-# Bottom 10 countries by Home Win Proportion (ascending order)
-bottom_10 <- country_stats_for_graphs %>%
-  arrange(`Mean Home Win Proportion`) %>%
-  slice(1:10)
-
-top_bottom_data <- bind_rows(top_10, bottom_10)
-
-distinct_colors <- c(
-  "blue", "red", "green", "orange", "purple", 
-  "pink", "brown", "yellow", "cyan", "magenta",
-  "darkblue", "maroon", "darkgreen", "gold", "violet",
-  "darkorange", "lightblue", "limegreen", "black", "gray"
-)
-
-# Scatter plot with distinct colors
-ggplot(top_bottom_data, aes(x = `Mean Home Goal Differential`, y = `Mean Home Win Proportion`, color = Country)) +
-  geom_point(size = 3) +
-  scale_color_manual(values = distinct_colors) +
-  labs(
-    title = "Top and Bottom 10 Countries by Home Win Proportion",
-    x = "Mean Home Goal Differential",
-    y = "Mean Home Win Proportion",
-    color = "Country"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "right"
-  )
-# Heat map of World 
-library(rnaturalearth)
-library(rnaturalearthdata)
-library(sf)
-
-
+# Creat Heat map of World Dataframe
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
+# Create data frame that houses data required for map package
 heatmap_data <- country_stats_for_graphs %>%
   rename(name = Country) %>%
   select(name, `Mean Home Win Proportion`) %>%
   mutate(`Mean Home Win Proportion` = round(`Mean Home Win Proportion` * 100, 2))
 
+# Join Dataframe
 world_map <- world %>%
   left_join(heatmap_data, by = "name")
 
+#Create the Plot
 ggplot(data = world_map) +
   geom_sf(aes(fill = `Mean Home Win Proportion`)) +
   scale_fill_viridis_c(na.value = "gray90", name = "Home Win %") +
