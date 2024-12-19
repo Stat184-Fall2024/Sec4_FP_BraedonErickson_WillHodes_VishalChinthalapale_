@@ -27,31 +27,33 @@ $$
 
 This data also Meets all of the FAIR principles, which stands for Findable, Accessible, Interoperable, and Reusable. The dataset is easily accessible on google, and can be easily downloaded, which satisfies the first three principles. We can also reuse the data because it is open to the public, therefore, it meets all of the FAIR principles.
 
-	In addition to answering the main question “Does Home Field Advantage meaningfully affect the outcome of games?” We also want to know the different effects geography has on Home-field advantage. Luckily, the same creator of the dataset mentioned previously also made another data set that lists certain facts about each country, and groups them into regions. In our data wrangling process, we merged these two datasets by country, so that each team has data on their performance, and the region their country is in. This regional data is especially useful when trying to ascertain the impact of Home Field advantage on geography because we can aggregate both the goal differential and winning percentage statistics to find how effective the advantage is in each region.
+```         
+In addition to answering the main question “Does Home Field Advantage meaningfully affect the outcome of games?” We also want to know the different effects geography has on Home-field advantage. Luckily, the same creator of the dataset mentioned previously also made another data set that lists certain facts about each country, and groups them into regions. In our data wrangling process, we merged these two datasets by country, so that each team has data on their performance, and the region their country is in. This regional data is especially useful when trying to ascertain the impact of Home Field advantage on geography because we can aggregate both the goal differential and winning percentage statistics to find how effective the advantage is in each region.
 
-	To find the effectiveness of Home Field advantage, we asked ourselves several smaller questions. These include, How does home-field advantage affect the probability of winning for the home team? When we look at the data we want to see if home-field advantage leads the home team to a higher winning percentage. In which countries is the home field the strongest? We want to know which countries do the best when given home-field advantage. In which countries is home field advantage the weakest? We made several graphs to help us answer these questions.
+To find the effectiveness of Home Field advantage, we asked ourselves several smaller questions. These include, How does home-field advantage affect the probability of winning for the home team? When we look at the data we want to see if home-field advantage leads the home team to a higher winning percentage. In which countries is the home field the strongest? We want to know which countries do the best when given home-field advantage. In which countries is home field advantage the weakest? We made several graphs to help us answer these questions.
+```
 
 The first data visualization (below) represents the home and away win proportion based on region. Based on the graph, we can see that there are multiple trends that are quite noticeable. We can see that countries that are in the regions of Sub-Saharan Africa, Oceania, and Western Europe, have the highest win proportion when they play at home. Some regions that have a low win percentage at home include the baltics, and Northern Africa. We also notice that there is a stark difference between the home win proportion, and the away win proportion. The home win proportion is vastly better, so much so that the highest away win proportion (the Baltics) is lower than the lowest home win proportion (Northern Africa).
 
-![](images/Screenshot 2024-12-18 at 9.54.48 PM.png)
+![](images/Screenshot%202024-12-18%20at%209.54.48%20PM.png)
 
 Another part of our research question includes the home win percentage by country. This data visualization below perfectly explains and displays one of our research questions. Taking a deeper dive into the visualization, we can see that there are a few countries that have a very high win percentage when they play at home. Some countries that have a high win percentage are located in southeast asia.
 
 Countries with a lower win percentage at home include countries in western and Eastern Europe. We can see a trend in which countries with lower populations tend to win less games at home rather than playing away.
 
-![](images/Screenshot 2024-12-18 at 9.56.09 PM.png)
+![](images/Screenshot%202024-12-18%20at%209.56.09%20PM.png)
 
 The next visualization below demonstrates the mean goal difference while playing at home versus away. Looking further into it, we notice that there are a few regions that stand out when it comes to mean goal difference. For example, regions like western Europe and Sub-Saharan-Africa have a higher mean goal difference when they play games at home. Something interesting about this is that, Western Europe and Sub-Saharan Africa have the lowest mean goal difference when playing games away. That is definitely something that catches our attention when viewing this.
 
-![](images/Screenshot 2024-12-18 at 9.58.14 PM.png)
+![](images/Screenshot%202024-12-18%20at%209.58.14%20PM.png)
 
 In this next visualization, each red dot represents a singular countries away statistics and each blue dot also represents a singular countries home statistics. The combined statistics show an obvious difference  between the two. At home nearly all countries have a higher goal differential and winning percentage than even the best countries have away.
 
-![](images/Screenshot 2024-12-18 at 10.00.59 PM.png)
+![](images/Screenshot%202024-12-18%20at%2010.00.59%20PM.png)
 
 The red dots represent the win proportion for each region’s away games, and the blue dots represent the home games. The win proportions at home in every region is better than the away win proportions, which allows us to infer that teams are more likely to win at home. Some regions like Sub-saharan Africa and Oceania have a higher win proportion at home compared to away, which we can use in the future to explore why these areas have such vast differences in home win percentage versus away win percentage. 
 
-![](images/Screenshot 2024-12-18 at 10.02.18 PM.png)
+![](images/Screenshot%202024-12-18%20at%2010.02.18%20PM.png)
 
 ## Our Findings
 
@@ -61,34 +63,21 @@ Based on our analysis, we can see that teams have a higher winning percentage at
 
 # Bibliography
 
-Gilermo, Dr. "Home Advantage in Soccer and Basketball." Kaggle, 2022,[ https://www.kaggle.com/datasets/drgilermo/home-advantage-in-soccer-and-basketball](https://www.kaggle.com/datasets/drgilermo/home-advantage-in-soccer-and-basketball). Accessed 18 Dec. 2024.
+Gilermo, Dr. "Home Advantage in Soccer and Basketball." Kaggle, 2022,<https://www.kaggle.com/datasets/drgilermo/home-advantage-in-soccer-and-basketball>. Accessed 18 Dec. 2024.
 
 # Code Index
 
 ## Load Packages
 
-```{{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}}
-      ```
-      # Load Packages
-library(dplyr)
-library(tidyr)
-library(googlesheets4)
-library(janitor)
-library(knitr)
-library(kableExtra)
-library(tidyverse)
-library(ggplot2)
-library(rnaturalearth)
-library(rnaturalearthdata)
-library(sf)
+31b8e172-b470-440e-83d8-e6b185028602:dAB5AHAAZQA6AE8AUQBCAGoAQQBHAEkAQQBOAHcAQQA1AEEARwBVAEEATgBnAEIAagBBAEMAMABBAE8AQQBBADQAQQBEAGcAQQBaAEEAQQB0AEEARABRAEEAWQBRAEEAdwBBAEcAVQBBAEwAUQBBADUAQQBHAE0AQQBPAFEAQgBpAEEAQwAwAEEAWgBnAEIAbQBBAEQAWQBBAE4AdwBCAGoAQQBHAFEAQQBOAEEAQQB3AEEARABRAEEAWgBRAEEAMgBBAEQAQQBBAAoAcABvAHMAaQB0AGkAbwBuADoATwBBAEEAMgBBAEQAQQBBAE0AQQBBAD0ACgBwAHIAZQBmAGkAeAA6AAoAcwBvAHUAcgBjAGUAOgBZAEEAQgBnAEEARwBBAEEAZQB3AEIANwBBAEgASQBBAEkAQQBCAGoAQQBHADgAQQBaAEEAQgBsAEEARQBFAEEAYwBBAEIAdwBBAEcAVQBBAGIAZwBCAGsAQQBDAHcAQQBJAEEAQgB5AEEARwBVAEEAWgBnAEEAdQBBAEcAdwBBAFkAUQBCAGkAQQBHAFUAQQBiAEEAQQA5AEEARwBzAEEAYgBnAEIAcABBAEgAUQBBAGMAZwBBADYAQQBEAG8AQQBZAFEAQgBzAEEARwB3AEEAWAB3AEIAcwBBAEcARQBBAFkAZwBCAGwAQQBHAHcAQQBjAHcAQQBvAEEAQwBrAEEATABBAEEAZwBBAEcAVQBBAFkAdwBCAG8AQQBHADgAQQBQAFEAQgBVAEEARgBJAEEAVgBRAEIARgBBAEMAdwBBAEkAQQBCAGwAQQBIAFkAQQBZAFEAQgBzAEEARAAwAEEAUgBnAEIAQgBBAEUAdwBBAFUAdwBCAEYAQQBIADAAQQBmAFEAQQBLAEEAQwBBAEEASQBBAEEAZwBBAEMAQQBBAEkAQQBBAGcAQQBHAEEAQQBZAEEAQgBnAEEAQQA9AD0ACgBzAHUAZgBmAGkAeAA6AA==:31b8e172-b470-440e-83d8-e6b185028602 \# Load Packages library(dplyr) library(tidyr) library(googlesheets4) library(janitor) library(knitr) library(kableExtra) library(tidyverse) library(ggplot2) library(rnaturalearth) library(rnaturalearthdata) library(sf)
 
-gs4_auth() 
+gs4_auth()
 
 ## Load Data
 
 ````         
-      ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
-      ```
+      ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}```
+````
       # URL of the Google Sheet 
 soccer_sheet_url <- "https://docs.google.com/spreadsheets/d/1WZUQYfuiB7Ls-jKSnLUCOmnnYh7y9SejODQzurH-7IU/edit?usp=sharing"
 
@@ -108,8 +97,8 @@ View(soccer_data)
 ## Data Wrangling
 
 ````         
-      ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
-      ```
+      ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}```
+````
 # Combining the datasets
 final_combined_data <- country_data %>%
   right_join(soccer_data, by = "Country") %>%
@@ -151,8 +140,8 @@ region_stats_for_graphs %>%
 ## Creating Data Visualizations
 
 ````         
-      ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
-      ```
+      ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}```
+````
 # Create a dataframe that can be used for the bar graph
 goal_graph_region_stats <- region_stats_for_graphs %>%
   pivot_longer(
