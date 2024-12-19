@@ -31,29 +31,185 @@ This data also Meets all of the FAIR principles, which stands for Findable, Acce
 In addition to answering the main question “Does Home Field Advantage meaningfully affect the outcome of games?” We also want to know the different effects geography has on Home-field advantage. Luckily, the same creator of the dataset mentioned previously also made another data set that lists certain facts about each country, and groups them into regions. In our data wrangling process, we merged these two datasets by country, so that each team has data on their performance, and the region their country is in. This regional data is especially useful when trying to ascertain the impact of Home Field advantage on geography because we can aggregate both the goal differential and winning percentage statistics to find how effective the advantage is in each region.
 
 To find the effectiveness of Home Field advantage, we asked ourselves several smaller questions. These include, How does home-field advantage affect the probability of winning for the home team? When we look at the data we want to see if home-field advantage leads the home team to a higher winning percentage. In which countries is the home field the strongest? We want to know which countries do the best when given home-field advantage. In which countries is home field advantage the weakest? We made several graphs to help us answer these questions.
-```
+
 
 The first data visualization (below) represents the home and away win proportion based on region. Based on the graph, we can see that there are multiple trends that are quite noticeable. We can see that countries that are in the regions of Sub-Saharan Africa, Oceania, and Western Europe, have the highest win proportion when they play at home. Some regions that have a low win percentage at home include the baltics, and Northern Africa. We also notice that there is a stark difference between the home win proportion, and the away win proportion. The home win proportion is vastly better, so much so that the highest away win proportion (the Baltics) is lower than the lowest home win proportion (Northern Africa).
 
-![](images/Screenshot%202024-12-18%20at%209.54.48%20PM.png)
+```{r}
+library(dplyr)
+library(tidyr)
+library(googlesheets4)
+library(janitor)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+gs4_auth() 
+
+# URL of the Google Sheet 
+soccer_sheet_url <- "https://docs.google.com/spreadsheets/d/1WZUQYfuiB7Ls-jKSnLUCOmnnYh7y9SejODQzurH-7IU/edit?usp=sharing"
+
+# Read the sheet into a dataframe
+soccer_data <- read_sheet(soccer_sheet_url)
+
+# URL of the Google Sheet 
+country_data_url <- "https://docs.google.com/spreadsheets/d/1XeF51jo6EBzTFAIBhQC8Q1TbucDYFtupi_dIuLwXcEw/edit?usp=sharing"
+
+# Read the sheet into a data frame
+country_data <- read_sheet(country_data_url)
+
+
+
+# Combining the datasets
+final_combined_data <- country_data %>%
+  right_join(soccer_data, by = "Country") %>%
+  distinct() %>%
+  select(-c(...16, PopDensity, Coastline, `Net migration`, Literacy, Phones, Arable, Crops, Deathrate, Agriculture, Other, Climate, Industry, Service, Attendance, Sport, Season, Team, Infant_mortality)) %>%
+  rename(HomeGoalsDiff = HomeRatio) %>%
+  filter(!is.na(HomeWins)) %>% 
+  filter(!is.na(HomeLoss)) %>%
+  filter(!is.na(HomeDraw)) %>%
+  filter(!is.na(AwayWins)) %>%
+  filter(!is.na(AwayLoss)) %>%
+  filter(!is.na(AwayDraw)) %>%
+  mutate(
+    HomeWinProportion = HomeWins / (HomeWins + HomeLoss + HomeDraw),
+    AwayWinProportion = AwayWins / (AwayWins + AwayLoss + AwayDraw)
+  ) 
+
+View(final_combined_data)
+
+region_stats_for_graphs <- final_combined_data %>%
+  group_by(Region) %>%
+  summarize(
+    `Mean Away Goal Differential` = mean(AwayGoalsDiff, na.rm = TRUE),
+    `Mean Home Goal Differential` = mean(HomeGoalsDiff, na.rm = TRUE),
+    `Mean Home Win Proportion` = mean(HomeWinProportion, na.rm = TRUE),
+    `Mean Away Win Proportion` = mean(AwayWinProportion, na.rm = TRUE)
+  )
+
+# Create a formatted table using kable
+region_stats_for_graphs %>%
+  kable(format = "html", digits = 2) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed"))
+
+# Graphs
+
+goal_graph_region_stats <- region_stats_for_graphs %>%
+  pivot_longer(
+    cols = c(`Mean Home Goal Differential`, `Mean Away Goal Differential`),
+    names_to = "Differential",
+    values_to = "MeanGoalDifference"
+  )
+
+
+# The dot plot for comparing win proportion for home and away games between regions
+win_graph_region_stat <- region_stats_for_graphs %>%
+  pivot_longer(
+    cols = c(`Mean Home Win Proportion`, `Mean Away Win Proportion`), 
+    names_to = "ProportionType", 
+    values_to = "Proportion"
+  )
+ggplot(win_graph_region_stat, aes(x = Region, y = Proportion, color = ProportionType)) +
+  geom_point(size = 9) +
+  labs(
+    title = "Comparison of Win Proportions by Region",
+    x = "Region",
+    y = "Proportion",
+    color = "Win Proportion"
+  ) +
+  scale_color_manual(
+    values = c("Mean Home Win Proportion" = "blue", "Mean Away Win Proportion" = "red"), 
+    labels = c("Mean Home Win Proportion" = "Home", "Mean Away Win Proportion" = "Away") 
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 70, hjust = 1)
+  )
+
+```
 
 Another part of our research question includes the home win percentage by country. This data visualization below perfectly explains and displays one of our research questions. Taking a deeper dive into the visualization, we can see that there are a few countries that have a very high win percentage when they play at home. Some countries that have a high win percentage are located in southeast asia.
 
 Countries with a lower win percentage at home include countries in western and Eastern Europe. We can see a trend in which countries with lower populations tend to win less games at home rather than playing away.
 
-![](images/Screenshot%202024-12-18%20at%209.56.09%20PM.png)
+```{r}
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+heatmap_data <- country_stats_for_graphs %>%
+  rename(name = Country) %>%
+  select(name, `Mean Home Win Proportion`) %>%
+  mutate(`Mean Home Win Proportion` = round(`Mean Home Win Proportion` * 100, 2))
+
+world_map <- world %>%
+  left_join(heatmap_data, by = "name")
+
+ggplot(data = world_map) +
+  geom_sf(aes(fill = `Mean Home Win Proportion`)) +
+  scale_fill_viridis_c(na.value = "gray90", name = "Home Win %") +
+  labs(
+    title = "Home Win Percentage by Country",
+    subtitle = "Gray if no data"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  )
+```
 
 The next visualization below demonstrates the mean goal difference while playing at home versus away. Looking further into it, we notice that there are a few regions that stand out when it comes to mean goal difference. For example, regions like western Europe and Sub-Saharan-Africa have a higher mean goal difference when they play games at home. Something interesting about this is that, Western Europe and Sub-Saharan Africa have the lowest mean goal difference when playing games away. That is definitely something that catches our attention when viewing this.
 
-![](images/Screenshot%202024-12-18%20at%209.58.14%20PM.png)
+```{r}
+ggplot(goal_graph_region_stats, aes(x = Region, y = MeanGoalDifference, fill = Differential)) + 
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), color = "black") +
+  labs(
+    title = "Mean Goal Difference by Region",
+    x = "Region",
+    y = "Mean Goal Difference",
+    fill = "Goal Differential"
+  ) +
+  scale_fill_manual(
+    values = c("Mean Home Goal Differential" = "blue", "Mean Away Goal Differential" = "red"), 
+    labels = c("Mean Home Goal Differential" = "Home", "Mean Away Goal Differential" = "Away") 
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 70, hjust = 1) 
+  )
+```
 
 In this next visualization, each red dot represents a singular countries away statistics and each blue dot also represents a singular countries home statistics. The combined statistics show an obvious difference  between the two. At home nearly all countries have a higher goal differential and winning percentage than even the best countries have away.
 
-![](images/Screenshot%202024-12-18%20at%2010.00.59%20PM.png)
+```{r echo=FALSE}
+ggplot() +
+  geom_point(data = country_stats_for_graphs, aes(x = `Mean Home Goal Differential`, y = `Mean Home Win Proportion`, color = "Home"), size = 3) +
+  geom_point(data = country_stats_for_graphs, aes(x = `Mean Away Goal Differential`, y = `Mean Away Win Proportion`, color = "Away"), size = 3) +
+  labs(
+    title = "Win Proportion vs Goal Differential by Country",
+    x = "Mean Goal Differential",
+    y = "Mean Win Proportion",
+    color = "Game Location"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right"
+  )
+```
 
 The red dots represent the win proportion for each region’s away games, and the blue dots represent the home games. The win proportions at home in every region is better than the away win proportions, which allows us to infer that teams are more likely to win at home. Some regions like Sub-saharan Africa and Oceania have a higher win proportion at home compared to away, which we can use in the future to explore why these areas have such vast differences in home win percentage versus away win percentage. 
 
-![](images/Screenshot%202024-12-18%20at%2010.02.18%20PM.png)
+```{r}
+region_stats_for_graphs %>%
+  kable(format = "html", digits = 2) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed"))
+
+```
 
 ## Our Findings
 
@@ -75,175 +231,116 @@ gs4_auth()
 
 ## Load Data
 
-````         
+```         
       ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}```
-````
-      # URL of the Google Sheet 
-soccer_sheet_url <- "https://docs.google.com/spreadsheets/d/1WZUQYfuiB7Ls-jKSnLUCOmnnYh7y9SejODQzurH-7IU/edit?usp=sharing"
+```
+
+```         
+  # URL of the Google Sheet 
+```
+
+soccer_sheet_url \<- "https://docs.google.com/spreadsheets/d/1WZUQYfuiB7Ls-jKSnLUCOmnnYh7y9SejODQzurH-7IU/edit?usp=sharing"
 
 # Read the sheet into a dataframe
-soccer_data <- read_sheet(soccer_sheet_url)
 
-# URL of the Google Sheet 
-country_data_url <- "https://docs.google.com/spreadsheets/d/1XeF51jo6EBzTFAIBhQC8Q1TbucDYFtupi_dIuLwXcEw/edit?usp=sharing"
+soccer_data \<- read_sheet(soccer_sheet_url)
+
+# URL of the Google Sheet
+
+country_data_url \<- "https://docs.google.com/spreadsheets/d/1XeF51jo6EBzTFAIBhQC8Q1TbucDYFtupi_dIuLwXcEw/edit?usp=sharing"
 
 # Read the sheet into a data frame
-country_data <- read_sheet(country_data_url)
 
-View(country_data)
-View(soccer_data)
-````
+country_data \<- read_sheet(country_data_url)
+
+View(country_data) View(soccer_data)
+
+```         
 
 ## Data Wrangling
+```
 
-````         
-      ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}```
-````
-# Combining the datasets
-final_combined_data <- country_data %>%
-  right_join(soccer_data, by = "Country") %>%
-  distinct() %>%
-  # Remove statistics that are not helpful
-  select(-c(...16, PopDensity, Coastline, `Net migration`, Literacy, Phones, Arable, Crops, Deathrate, Agriculture, Other, Climate, Industry, Service, Attendance, Sport, Season, Team, Infant_mortality)) %>%
-  rename(HomeGoalsDiff = HomeRatio) %>%
-  # Remove values that do not exist
-  filter(!is.na(HomeWins)) %>% 
-  filter(!is.na(HomeLoss)) %>%
-  filter(!is.na(HomeDraw)) %>%
-  filter(!is.na(AwayWins)) %>%
-  filter(!is.na(AwayLoss)) %>%
-  filter(!is.na(AwayDraw)) %>%
-  # Create new columns for our statistics
-  mutate(
-    HomeWinProportion = HomeWins / (HomeWins + HomeLoss + HomeDraw),
-    AwayWinProportion = AwayWins / (AwayWins + AwayLoss + AwayDraw)
-  ) 
+```         
+  ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}```
+```
+
+```         
+# Comb
+```
+
+ining the datasets
+final_combined_data \<- country_data %\>%
+right_join(soccer_data, by = "Country") %\>%
+distinct() %\>%
+\# Remove statistics that are not helpful
+select(-c(...16, PopDensity, Coastline, \`Net migration\`, Literacy, Phones, Arable, Crops, Deathrate, Agriculture, Other, Climate, Industry, Service, Attendance, Sport, Season, Team, Infant_mortality)) %\>%
+rename(HomeGoalsDiff = HomeRatio) %\>%
+\# Remove values that do not exist
+filter(!is.na(HomeWins)) %\>%
+filter(!is.na(HomeLoss)) %\>%
+filter(!is.na(HomeDraw)) %\>%
+filter(!is.na(AwayWins)) %\>%
+filter(!is.na(AwayLoss)) %\>%
+filter(!is.na(AwayDraw)) %\>%
+\# Create new columns for our statistics
+mutate(
+HomeWinProportion = HomeWins / (HomeWins + HomeLoss + HomeDraw),
+AwayWinProportion = AwayWins / (AwayWins + AwayLoss + AwayDraw)
+)
 
 View(final_combined_data)
 
 # Summarize data by region
-region_stats_for_graphs <- final_combined_data %>%
-  group_by(Region) %>%
-  summarize(
-    `Mean Away Goal Differential` = mean(AwayGoalsDiff, na.rm = TRUE),
-    `Mean Home Goal Differential` = mean(HomeGoalsDiff, na.rm = TRUE),
-    `Mean Home Win Proportion` = mean(HomeWinProportion, na.rm = TRUE),
-    `Mean Away Win Proportion` = mean(AwayWinProportion, na.rm = TRUE)
-  )
+region_stats_for_graphs \<- final_combined_data %\>%
+group_by(Region) %\>%
+summarize(
+\`Mean Away Goal Differential\` = mean(AwayGoalsDiff, na.rm = TRUE),
+\`Mean Home Goal Differential\` = mean(HomeGoalsDiff, na.rm = TRUE),
+\`Mean Home Win Proportion\` = mean(HomeWinProportion, na.rm = TRUE),
+\`Mean Away Win Proportion\` = mean(AwayWinProportion, na.rm = TRUE)
+)
 
 # Create a formatted table using kable
-region_stats_for_graphs %>%
-  kable(format = "html", digits = 2) %>%
-  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed"))
-````
+region_stats_for_graphs %\>%
+kable(format = "html", digits = 2) %\>%
+kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed"))
 
 ## Creating Data Visualizations
 
-````         
+```         
       ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}```
-````
+```
+
 # Create a dataframe that can be used for the bar graph
-goal_graph_region_stats <- region_stats_for_graphs %>%
-  pivot_longer(
-    cols = c(`Mean Home Goal Differential`, `Mean Away Goal Differential`),
-    names_to = "Differential",
-    values_to = "MeanGoalDifference"
-  )
+
+goal_graph_region_stats \<- region_stats_for_graphs %\>% pivot_longer( cols = c(`Mean Home Goal Differential`, `Mean Away Goal Differential`), names_to = "Differential", values_to = "MeanGoalDifference" )
 
 # The side-by-side bar graph for comparing goal diff home and away games between regions
-ggplot(goal_graph_region_stats, aes(x = Region, y = MeanGoalDifference, fill = Differential)) + 
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8), color = "black") +
-  labs(
-    title = "Mean Goal Difference by Region",
-    x = "Region",
-    y = "Mean Goal Difference",
-    fill = "Goal Differential"
-  ) +
-  scale_fill_manual(
-    values = c("Mean Home Goal Differential" = "blue", "Mean Away Goal Differential" = "red"), 
-    labels = c("Mean Home Goal Differential" = "Home", "Mean Away Goal Differential" = "Away") 
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 70, hjust = 1) 
-  )
-# Create dataframe with Win % data
-win_graph_region_stat <- region_stats_for_graphs %>%
-  pivot_longer(
-    cols = c(`Mean Home Win Proportion`, `Mean Away Win Proportion`), 
-    names_to = "ProportionType", 
-    values_to = "Proportion"
-  )
+
+ggplot(goal_graph_region_stats, aes(x = Region, y = MeanGoalDifference, fill = Differential)) + geom_bar(stat = "identity", position = position_dodge(width = 0.8), color = "black") + labs( title = "Mean Goal Difference by Region", x = "Region", y = "Mean Goal Difference", fill = "Goal Differential" ) + scale_fill_manual( values = c("Mean Home Goal Differential" = "blue", "Mean Away Goal Differential" = "red"), labels = c("Mean Home Goal Differential" = "Home", "Mean Away Goal Differential" = "Away") ) + theme_minimal() + theme( axis.text.x = element_text(angle = 70, hjust = 1) ) \# Create dataframe with Win % data win_graph_region_stat \<- region_stats_for_graphs %\>% pivot_longer( cols = c(`Mean Home Win Proportion`, `Mean Away Win Proportion`), names_to = "ProportionType", values_to = "Proportion" )
 
 # The dot plot for comparing win proportion for home and away games between regions
-ggplot(win_graph_region_stat, aes(x = Region, y = Proportion, color = ProportionType)) +
-  geom_point(size = 9) +
-  labs(
-    title = "Comparison of Win Proportions by Region",
-    x = "Region",
-    y = "Proportion",
-    color = "Win Proportion"
-  ) +
-  scale_color_manual(
-    values = c("Mean Home Win Proportion" = "blue", "Mean Away Win Proportion" = "red"), 
-    labels = c("Mean Home Win Proportion" = "Home", "Mean Away Win Proportion" = "Away") 
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 70, hjust = 1)
-  )
+
+ggplot(win_graph_region_stat, aes(x = Region, y = Proportion, color = ProportionType)) + geom_point(size = 9) + labs( title = "Comparison of Win Proportions by Region", x = "Region", y = "Proportion", color = "Win Proportion" ) + scale_color_manual( values = c("Mean Home Win Proportion" = "blue", "Mean Away Win Proportion" = "red"), labels = c("Mean Home Win Proportion" = "Home", "Mean Away Win Proportion" = "Away") ) + theme_minimal() + theme( axis.text.x = element_text(angle = 70, hjust = 1) )
 
 # Summarize data for countries
-country_stats_for_graphs <- final_combined_data %>%
-  group_by(Country) %>%
-  summarize(
-    `Mean Away Goal Differential` = mean(AwayGoalsDiff, na.rm = TRUE),
-    `Mean Home Goal Differential` = mean(HomeGoalsDiff, na.rm = TRUE),
-    `Mean Home Win Proportion` = mean(HomeWinProportion, na.rm = TRUE),
-    `Mean Away Win Proportion` = mean(AwayWinProportion, na.rm = TRUE)
-  )
+
+country_stats_for_graphs \<- final_combined_data %\>% group_by(Country) %\>% summarize( `Mean Away Goal Differential` = mean(AwayGoalsDiff, na.rm = TRUE), `Mean Home Goal Differential` = mean(HomeGoalsDiff, na.rm = TRUE), `Mean Home Win Proportion` = mean(HomeWinProportion, na.rm = TRUE), `Mean Away Win Proportion` = mean(AwayWinProportion, na.rm = TRUE) )
 
 # Scatter Plot to show relationship between winning proportion and goal diff for all countries
-ggplot() +
-  geom_point(data = country_stats_for_graphs, aes(x = `Mean Home Goal Differential`, y = `Mean Home Win Proportion`, color = "Home"), size = 3) +
-  geom_point(data = country_stats_for_graphs, aes(x = `Mean Away Goal Differential`, y = `Mean Away Win Proportion`, color = "Away"), size = 3) +
-  labs(
-    title = "Win Proportion vs Goal Differential by Country",
-    x = "Mean Goal Differential",
-    y = "Mean Win Proportion",
-    color = "Game Location"
-  ) +
-  theme_minimal() +
-  theme(
-    legend.position = "right"
-  )
+
+ggplot() + geom_point(data = country_stats_for_graphs, aes(x = `Mean Home Goal Differential`, y = `Mean Home Win Proportion`, color = "Home"), size = 3) + geom_point(data = country_stats_for_graphs, aes(x = `Mean Away Goal Differential`, y = `Mean Away Win Proportion`, color = "Away"), size = 3) + labs( title = "Win Proportion vs Goal Differential by Country", x = "Mean Goal Differential", y = "Mean Win Proportion", color = "Game Location" ) + theme_minimal() + theme( legend.position = "right" )
 
 # Creat Heat map of World Dataframe
-world <- ne_countries(scale = "medium", returnclass = "sf")
+
+world \<- ne_countries(scale = "medium", returnclass = "sf")
 
 # Create data frame that houses data required for map package
-heatmap_data <- country_stats_for_graphs %>%
-  rename(name = Country) %>%
-  select(name, `Mean Home Win Proportion`) %>%
-  mutate(`Mean Home Win Proportion` = round(`Mean Home Win Proportion` * 100, 2))
+
+heatmap_data \<- country_stats_for_graphs %\>% rename(name = Country) %\>% select(name, `Mean Home Win Proportion`) %\>% mutate(`Mean Home Win Proportion` = round(`Mean Home Win Proportion` \* 100, 2))
 
 # Join Dataframe
-world_map <- world %>%
-  left_join(heatmap_data, by = "name")
 
-#Create the Plot
-ggplot(data = world_map) +
-  geom_sf(aes(fill = `Mean Home Win Proportion`)) +
-  scale_fill_viridis_c(na.value = "gray90", name = "Home Win %") +
-  labs(
-    title = "Home Win Percentage by Country",
-    subtitle = "Gray if no data"
-  ) +
-  theme_minimal() +
-  theme(
-    legend.position = "right",
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    panel.grid = element_blank()
-  )
-````
+world_map \<- world %\>% left_join(heatmap_data, by = "name")
+
+#Create the Plot ggplot(data = world_map) + geom_sf(aes(fill = `Mean Home Win Proportion`)) + scale_fill_viridis_c(na.value = "gray90", name = "Home Win %") + labs( title = "Home Win Percentage by Country", subtitle = "Gray if no data" ) + theme_minimal() + theme( legend.position = "right", axis.text = element_blank(), axis.ticks = element_blank(), panel.grid = element_blank() ) \`\`\`\`
